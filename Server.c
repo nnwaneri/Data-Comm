@@ -8,56 +8,32 @@
 #include <ctype.h>
 
 
-void error(const char *message){
-    perror(msg);
-    exit(1);
-}
-
 int main(int argc, char *argv[]){
     rintf("----------------------------------------\n");
     printf("Data Communication & Network Programming\n");
     printf("Norah Nwaneri\n");
     printf("----------------------------------------\n");
-    int sockfd, newsockfd, portno;
-     socklen_t clilen;
-     char buffer[512];
-     struct sockaddy_in server_addy, client_addy;
-     int n;
-     if (argc < 2) {
-         fprintf(stderr,"ERROR no port found.\n");
-         exit(1);
-     }
-     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-     if (sockfd < 0) 
-        error("ERROR socket will  not open.");
-     bzero((char *) &server_addy, sizeof(server_addy));
-     portno = atoi(argv[1]);
-     server_addy.sin_family = AF_INET;
-     server_addy.sin_addy.s_addy = INaddy_ANY;
-     server_addy.sin_port = htons(portno);
-     if (bind(sockfd, (struct sockaddy *) &server_addy,
-              sizeof(server_addy)) < 0)
-              error("ERROR with binding");
-     listen(sockfd,5);
-     clilen = sizeof(client_addy);
-     newsockfd = accept(sockfd, 
-                 (struct sockaddy *) &client_addy, &clilen);
-     if (newsockfd < 0) 
-          error("ERROR on accept");
-    
-         FILE *fp;
-         int ch = 0;
-            fp = fopen("sample_receive.txt","a");            
-            int words;
-		read(newsockfd, &words, sizeof(int));
-          while(ch != words){
-        	 read(newsockfd , buffer , 512); 
-             fprintf(fp , " %s" , buffer);
-		     ch++;
-	   }
-        printf("The file was received.\n");
-        printf("The new file created is sample_receive.txt");
-     close(newsockfd);
-     close(sockfd);
-     return 0; 
+    int socklen_t sid,clen;
+    char buffer[1024];
+    struct sockaddr_in saddr,caddr;int n;if(argc<2){
+	fprintf(stderr,"ERROR: port is not given \n");
+	exit(1);
+    }
+    sid=socket(AF_INET,SOCK_DGRAM,0);
+    if(sid<0) 
+	perror("socket_create");
+    bzero((char*)&saddr,sizeof(saddr));
+    saddr.sin_family=AF_INET;
+    saddr.sin_port=htons(atoi(argv[1]));
+    saddr.sin_addr.s_addr=INADDR_ANY;
+    if(bind(sid,(struct    sockaddr *)&saddr,sizeof(saddr))<0)
+	perror("socket_bind");
+    clen=sizeof(caddr);
+    bzero(buffer,1024);
+    n=recvfrom(sid,buffer,1023,0,(struct sockaddr*)&caddr,&clen);
+    if(n<0) 
+	perror("receive");
+    printf("The msg is %s", buffer);
+    close(sid);
+    return 0;
 }
